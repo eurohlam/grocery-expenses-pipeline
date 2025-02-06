@@ -8,35 +8,6 @@ import java.util.*;
 
 public class ReceiptParser {
 
-    String s = """
-            'TeV ilson’s\\n
-            Moore Wilsons Wellington\\n
-            Cnr Lorne, Coliege & Tory Streets\\n
-            Te Aro\\n
-            Wie Tington\\n
-            04 384 9905\\n
-            \\n
-            ih\\n\\n
-            Receipe 2 Uuy\\n
-            Date 3/08/2024 BS awiane, 13\\n
-            Loyaity Card Number:\\n\\n
-            | Beker Bovs Afchan Biscuits 700g\\n\\n
-            ETA 5) = 6.25\\n
-            2 B/Boys Spi icot Yoghurt Biscuit 6505\\n
-            | @ £6.25 $6.25\\n
-            3 Genoese Gruund PR sta 360g\\n
-            1@ $16.50 = $16.50\\n
-            4 Camil] Dar’ we 750m]\\n
-            10 SAiae = $2.95\\n
-            r M/Wilse ied Mango Slices 500g\\n
-            18 Oy O5 = $10.95\\n
-            Ceres Bio Gherkins No Sugar 670g\\n
-            1@ $8.95 = $3.95\\n
-            tal oe fore G5| $45.05\\n
-            SeIBE ax $6. /6\\n
-            Total ine GST $51.85\\n
-            Debit $51.8\\n\\n'
-            """;
     private static Logger LOG = LogManager.getLogger(ReceiptParser.class);
 
     private String originalText;
@@ -134,6 +105,6 @@ public class ReceiptParser {
     }
 
     public String toJson() {
-        return new JSONObject(resultMap).toJSONString();
+        return JSONObject.toJSONString(resultMap);
     }
 }
