@@ -16,29 +16,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.openpnp</groupId>
-            <artifactId>opencv</artifactId>
-            <version>4.9.0-0</version>
-        </dependency>
-
-        <!-- logging -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
-            <version>3.4.4</version>
-        </dependency>
-
         <!-- Tesseract OCR -->
         <dependency>
             <groupId>net.sourceforge.tess4j</groupId>
@@ -50,6 +27,12 @@
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- OpenCV 4.x-->
+        <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
+            <version>4.9.0-0</version>
         </dependency>
         <!-- parsing -->
         <dependency>
@@ -73,6 +56,22 @@
                     <artifactId>junit</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- logging -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>3.4.4</version>
         </dependency>
     </dependencies>
 
