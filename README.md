@@ -89,8 +89,10 @@ Run java
         -Djava.library.path=/opt/local/libexec/opencv4/java/jni/  \
     -jar target/grocery-expenses-pipeline-1.0-SNAPSHOT.jar  \
         -file src/test/resources/samples/IMG_5213.jpeg  \
-        -restEndpoint http://localhost:8080
+        -restEndpoint http://localhost:8080  \
+        -storeName PackNSave
 
 where
 * -file  -  is a path to an image that needs to be processed. This is a mandatory argument
-* -restEndpoint  -  is a REST-endpoint where a result of recognition and parsing needs to be sent as a JSON. This is an optional argument.  
+* -restEndpoint  -  is a REST-endpoint where a result of recognition and parsing needs to be sent as a JSON. This is an optional argument.
+* -storeName  -  is a name of store where you got current receipt. By default, it is "Undefined"

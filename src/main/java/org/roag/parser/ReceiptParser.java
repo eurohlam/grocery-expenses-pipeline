@@ -10,6 +10,7 @@ public class ReceiptParser {
 
     private static Logger LOG = LogManager.getLogger(ReceiptParser.class);
 
+    private String storeName = "Undefined";
     private String originalText;
     private String processedText;
     private Map<String, String> resultMap;
@@ -21,6 +22,11 @@ public class ReceiptParser {
         this.originalText = text;
         this.processedText = text;
         this.resultMap = new LinkedHashMap<>();
+        return this;
+    }
+
+    public ReceiptParser withStoreName(String storeName) {
+        this.storeName = storeName;
         return this;
     }
 
@@ -105,6 +111,16 @@ public class ReceiptParser {
     }
 
     public String toJson() {
-        return JSONObject.toJSONString(resultMap);
+        var jsonMap = new Hashtable<>();
+        jsonMap.put("storeName", storeName);
+        var jsonItems = new ArrayList<>();
+        resultMap.forEach((k,v) -> {
+            var item = new Hashtable<>();
+            item.put("item", k);
+            item.put("price", v);
+            jsonItems.add(item);
+        });
+        jsonMap.put("items", jsonItems);
+        return JSONObject.toJSONString(jsonMap);
     }
 }

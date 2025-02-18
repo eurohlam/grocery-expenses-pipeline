@@ -8,7 +8,8 @@ public class MainCLI {
 
     public enum CLIArgument {
         FILE("-file"),
-        REST_ENDPOINT("-restEndpoint");
+        REST_ENDPOINT("-restEndpoint"),
+        STORE_NAME("-storeName");
 
         private final String name;
 
@@ -22,7 +23,7 @@ public class MainCLI {
         }
 
         public static CLIArgument fromName(String name) {
-            for (CLIArgument arg: CLIArgument.values()) {
+            for (CLIArgument arg : CLIArgument.values()) {
                 if (arg.toString().equals(name)) {
                     return arg;
                 }
@@ -68,11 +69,14 @@ public class MainCLI {
         pipeline
                 .withFile(arguments.get(CLIArgument.FILE))
                 .ocr(o -> ocr.value = o.blur().ocr().getOcrAsString())
-                .parse(parser -> json.value = parser.withText(ocr.value)
-                        .removeNoiseSymbols()
-                        .processMultilines()
-                        .parseAndConvertToTable()
-                        .toJson());
+                .parse(parser ->
+                        json.value = parser
+                                .withText(ocr.value)
+                                .withStoreName(arguments.get(CLIArgument.STORE_NAME))
+                                .removeNoiseSymbols()
+                                .processMultilines()
+                                .parseAndConvertToTable()
+                                .toJson());
 
         if (arguments.containsKey(CLIArgument.REST_ENDPOINT)) {
             System.out.println("Sending result of recognition to endpoint: " + arguments.get(CLIArgument.REST_ENDPOINT));
