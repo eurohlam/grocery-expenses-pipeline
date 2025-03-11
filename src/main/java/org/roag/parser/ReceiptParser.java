@@ -1,5 +1,6 @@
 package org.roag.parser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -15,7 +16,7 @@ public class ReceiptParser {
     private String processedText;
     private Map<String, String> resultMap;
 
-    public ReceiptParser(){
+    public ReceiptParser() {
     }
 
     public ReceiptParser withText(String text) {
@@ -26,7 +27,9 @@ public class ReceiptParser {
     }
 
     public ReceiptParser withStoreName(String storeName) {
-        this.storeName = storeName;
+        if (StringUtils.isNotEmpty(storeName)) {
+            this.storeName = storeName;
+        }
         return this;
     }
 
@@ -36,6 +39,7 @@ public class ReceiptParser {
 
     /**
      * The first phase of the parsing where we remove noise symbols that can be presented as side-effects of OCR
+     *
      * @return
      */
     public ReceiptParser removeNoiseSymbols() {
@@ -45,9 +49,13 @@ public class ReceiptParser {
                 .lines()
                 .filter(line -> !line.isBlank())
                 .forEach(
-                        line -> stringBuilder
-                                .append(line.replaceAll("[:`'=+;\"|,()*\\[\\]^$]", "").strip())
-                                .append("\n")
+                        line -> {
+                            var cleanLine = line.replaceAll("[:`'=+;\"“|,()*\\[\\]^$]", "").strip();
+                            cleanLine = cleanLine.replaceFirst("^[~]", "").strip();
+                            stringBuilder
+                                    .append(cleanLine)
+                                    .append("\n");
+                        }
                 );
         processedText = stringBuilder.toString();
         LOG.info("  ===> Result after removing noise:\n {}", processedText);
@@ -57,18 +65,25 @@ public class ReceiptParser {
 
     /**
      * The second phase of the parsing where we identify items in the receipt that are printed in two lines
+     *
      * @return
      */
     public ReceiptParser processMultilines() {
         LOG.info("===> Multiline items processing started");
         var lines = processedText.lines().toList();
         var modifiedLines = new ArrayList<String>(lines.size());
+        //TODO: this approach works only for pack'n'save
+        //for countdown need to try inverted approach, like:
+        // 1. search for line that does not have price
+        // 2. look up for the next line
+        // 2.1 if next line has price then merge lines and got to line (i+2)
+        // 2.2 otherwise ignore the line
         for (int i = 0; i < lines.size(); i++) {
             var line = lines.get(i);
             //looking for lines like:
             //    0ty 2@ $7.69 each 19.38
             if (line.matches("[\\w\\s]*\\d+\\s*@\\s*\\$?\\d+\\.\\d{2}.*")) {
-                var newLine = lines.get(i - 1) + " " +line;
+                var newLine = lines.get(i - 1) + " " + line;
                 LOG.info("Found multiline: \n {}", newLine);
                 modifiedLines.set(modifiedLines.size() - 1, newLine);
             } else {
@@ -76,7 +91,7 @@ public class ReceiptParser {
             }
         }
         var result = String.join("\n", modifiedLines);
-        LOG.info("  ===> Result text after processing multilines: \n {}",result);
+        LOG.info("  ===> Result text after processing multilines: \n {}", result);
         processedText = result;
         LOG.info("<=== Multiline items processing finished");
         return this;
@@ -85,6 +100,7 @@ public class ReceiptParser {
 
     /**
      * Final phase of the parsing where we extract items and prices from the receipt and put them into Map.
+     *
      * @return
      */
     public ReceiptParser parseAndConvertToTable() {
@@ -114,10 +130,10 @@ public class ReceiptParser {
         var jsonMap = new Hashtable<>();
         jsonMap.put("storeName", storeName);
         var jsonItems = new ArrayList<>();
-        resultMap.forEach((k,v) -> {
+        resultMap.forEach((k, v) -> {
             var item = new Hashtable<>();
             item.put("item", k);
-            item.put("price", v);
+            item.put("price", v != null ? v : 0);
             jsonItems.add(item);
         });
         jsonMap.put("items", jsonItems);
