@@ -78,7 +78,22 @@ public class ReceiptParser {
         // 2. look up for the next line
         // 2.1 if next line has price then merge lines and got to line (i+2)
         // 2.2 otherwise ignore the line
-        for (int i = 0; i < lines.size(); i++) {
+        var i = 0;
+        while (i < lines.size()) {
+            // looking for line that does not end with price and check the next line
+            if (!lines.get(i).matches("^.+(\\d+\\.\\d{2})$")
+                    && ((lines.size() > (i + 1)) && (lines.get(i + 1).matches("^.+(\\d+\\.\\d{2})$")))) {
+                    var newLine = lines.get(i) + " " + lines.get(i + 1);
+                    LOG.info("Found multiline: \n {}", newLine);
+                    modifiedLines.add(newLine);
+                    i++;
+            } else {
+                modifiedLines.add(lines.get(i));
+            }
+            i++;
+        }
+
+        /*for (int i = 0; i < lines.size(); i++) {
             var line = lines.get(i);
             //looking for lines like:
             //    0ty 2@ $7.69 each 19.38
@@ -89,7 +104,7 @@ public class ReceiptParser {
             } else {
                 modifiedLines.add(line);
             }
-        }
+        }*/
         var result = String.join("\n", modifiedLines);
         LOG.info("  ===> Result text after processing multilines: \n {}", result);
         processedText = result;
