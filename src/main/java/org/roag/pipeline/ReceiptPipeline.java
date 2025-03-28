@@ -1,5 +1,6 @@
 package org.roag.pipeline;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.roag.ocr.ReceiptOCR;
@@ -13,6 +14,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class ReceiptPipeline {
@@ -20,6 +22,7 @@ public class ReceiptPipeline {
     private static Logger LOG = LogManager.getLogger(ReceiptPipeline.class);
 
     private String sourceFile;
+    private String tessdataPath;
     private String restEndpoint;
     private ReceiptOCR receiptOCR = new ReceiptOCR();
     private ReceiptParser receiptParser = new ReceiptParser();
@@ -30,6 +33,11 @@ public class ReceiptPipeline {
         return this;
     }
 
+    public ReceiptPipeline withTessdataPath(String tessdataPath) {
+        this.tessdataPath = tessdataPath;
+        return this;
+    }
+
     public ReceiptPipeline withEndpoint(String restEndpoint) {
         this.restEndpoint = restEndpoint;
         return this;
@@ -37,12 +45,16 @@ public class ReceiptPipeline {
 
     public ReceiptPipeline process() {
         LOG.info("===> Started processing file {}", sourceFile);
-        var ocrText = new ReceiptOCR()
+        Objects.requireNonNull(sourceFile, "sourceFile must be defined");
+        if (StringUtils.isNotEmpty(tessdataPath)) {
+            receiptOCR = new ReceiptOCR(tessdataPath);
+        }
+        var ocrText = receiptOCR
                 .withSource(sourceFile)
                 .threshold(127)
                 .ocr()
                 .getOcrAsString();
-        var json = new ReceiptParser()
+        var json = receiptParser
                 .withText(ocrText)
                 .removeNoiseSymbols()
                 .processMultilines()
@@ -54,6 +66,10 @@ public class ReceiptPipeline {
     }
 
     public ReceiptPipeline ocr(final Consumer<ReceiptOCR> consumer) {
+        Objects.requireNonNull(sourceFile, "sourceFile must be defined");
+        if (StringUtils.isNotEmpty(tessdataPath)) {
+            receiptOCR = new ReceiptOCR(tessdataPath);
+        }
         receiptOCR.withSource(sourceFile);
         consumer.accept(receiptOCR);
         return this;

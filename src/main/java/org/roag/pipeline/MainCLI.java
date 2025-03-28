@@ -1,5 +1,7 @@
 package org.roag.pipeline;
 
+import org.roag.ocr.ReceiptOCR;
+
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
@@ -9,7 +11,8 @@ public class MainCLI {
     public enum CLIArgument {
         FILE("-file"),
         REST_ENDPOINT("-restEndpoint"),
-        STORE_NAME("-storeName");
+        STORE_NAME("-storeName"),
+        TESSDATA_PATH("-tessdataPath");
 
         private final String name;
 
@@ -57,6 +60,10 @@ public class MainCLI {
             arguments.forEach((key, value) -> System.out.println(key + " = " + value));
         }
 
+        if (!arguments.containsKey(CLIArgument.TESSDATA_PATH)) {
+            System.out.println("\nWarning: \nPath to tessData is not provided. The default path will be used: " + ReceiptOCR.DEFAULT_TESSDATA_PATH + " To override the default value use input parameter: \"-tessdataPath path\"\n");
+        }
+
         //Running pipeline
         System.out.println("Running Optical Character Recognition (OCR) and parsing for file: " + arguments.get(CLIArgument.FILE));
         var pipeline = new ReceiptPipeline();
@@ -68,6 +75,7 @@ public class MainCLI {
         };
         pipeline
                 .withFile(arguments.get(CLIArgument.FILE))
+                .withTessdataPath(arguments.get(CLIArgument.TESSDATA_PATH))
                 .ocr(o -> ocr.value = o.blur().ocr().getOcrAsString())
                 .parse(parser ->
                         json.value = parser
