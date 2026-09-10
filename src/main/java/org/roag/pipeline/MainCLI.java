@@ -9,15 +9,22 @@ import java.util.Map;
 public class MainCLI {
 
     public enum CLIArgument {
-        FILE("-file"),
-        REST_ENDPOINT("-restEndpoint"),
-        STORE_NAME("-storeName"),
-        TESSDATA_PATH("-tessdataPath");
+        FILE("-file", false),
+        REST_ENDPOINT("-restEndpoint", false),
+        STORE_NAME("-storeName", false),
+        TESSDATA_PATH("-tessdataPath", false),
+        DEBUG_IMAGES("-debugImages", true); // flag: dump preprocessed image per stage
 
         private final String name;
+        private final boolean flag;
 
-        CLIArgument(final String name) {
+        CLIArgument(final String name, final boolean flag) {
             this.name = name;
+            this.flag = flag;
+        }
+
+        public boolean isFlag() {
+            return flag;
         }
 
         @Override
@@ -41,10 +48,14 @@ public class MainCLI {
         Map<CLIArgument, String> arguments = new EnumMap<>(CLIArgument.class);
 
         for (int i = 0; i < args.length; i++) {
-            if (args[i].startsWith("-") && i + 1 < args.length) {
+            if (args[i].startsWith("-")) {
                 var arg = CLIArgument.fromName(args[i]);
-                arguments.put(arg, args[i + 1]);
-                i++; // Skip the next argument since it's a value
+                if (arg.isFlag()) {
+                    arguments.put(arg, "true"); // flags take no value
+                } else if (i + 1 < args.length) {
+                    arguments.put(arg, args[i + 1]);
+                    i++; // Skip the next argument since it's a value
+                }
             }
         }
 
@@ -76,7 +87,14 @@ public class MainCLI {
         pipeline
                 .withFile(arguments.get(CLIArgument.FILE))
                 .withTessdataPath(arguments.get(CLIArgument.TESSDATA_PATH))
-                .ocr(o -> ocr.value = o.blur().ocr().getOcrAsString())
+                .ocr(o -> ocr.value = o
+                        .withStageDump(arguments.containsKey(CLIArgument.DEBUG_IMAGES))
+                        .grayscale()
+                        .blur()
+                        .deskew()
+                        .adaptiveThreshold()
+                        .ocr()
+                        .getOcrAsString())
                 .parse(parser ->
                         json.value = parser
                                 .withText(ocr.value)
